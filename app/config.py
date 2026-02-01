@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     table_name: str = "memories"
     
     # LLM settings for SimpleMem
+    openai_base_url: Optional[str] = Field(None, alias="OPENAI_BASE_URL")
     model_name: Optional[str] = Field(None, alias="MODEL_NAME")  # e.g., "gpt-4" or "claude-3-opus-20240229"
     api_key: Optional[str] = None
 

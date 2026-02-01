@@ -82,6 +82,14 @@ class LanceDBAdapter(StorageAdapter):
             if not settings.use_cuda:
                 os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
 
+            # Ensure OpenAI-compatible clients used by SimpleMem can see the base URL
+            # even when configuration is provided via our `.env` (pydantic-settings does
+            # not automatically export values into `os.environ`).
+            if settings.openai_base_url:
+                os.environ["OPENAI_BASE_URL"] = settings.openai_base_url
+                # Back-compat for older OpenAI client versions/providers.
+                os.environ.setdefault("OPENAI_API_BASE", settings.openai_base_url)
+
             # Import simplemem here to avoid issues if not installed
             from simplemem import SimpleMemSystem
             
