@@ -201,6 +201,17 @@ source .venv/bin/activate
 uv pip sync requirements.lock
 ```
 
+### GPU/CUDA Support
+
+For CUDA-enabled deployments (optional):
+
+```bash
+# After base installation, upgrade PyTorch to CUDA version
+uv pip install torch torchvision torchaudio --upgrade --index-url https://download.pytorch.org/whl/cu130
+```
+
+This accelerates embedding generation and model inference on NVIDIA GPUs.
+
 ## Testing Philosophy
 
 - Test locally before committing

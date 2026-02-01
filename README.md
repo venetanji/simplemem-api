@@ -121,6 +121,32 @@ API_KEY=your-openai-api-key-here
 - OpenAI API key with models like `gpt-4`, `gpt-3.5-turbo`
 - Compatible APIs (Azure OpenAI, local LLM endpoints, etc.)
 
+### GPU/CUDA Support (Optional)
+
+For CUDA-enabled deployments to accelerate embedding generation and model inference:
+
+```bash
+# After installing base dependencies, install PyTorch with CUDA support
+# For CUDA 13.0:
+uv pip install torch torchvision torchaudio --upgrade --index-url https://download.pytorch.org/whl/cu130
+
+# For CUDA 12.1:
+uv pip install torch torchvision torchaudio --upgrade --index-url https://download.pytorch.org/whl/cu121
+
+# For CUDA 11.8:
+uv pip install torch torchvision torchaudio --upgrade --index-url https://download.pytorch.org/whl/cu118
+```
+
+This will replace the CPU-only PyTorch with the CUDA-enabled version. Verify GPU availability:
+
+```python
+import torch
+print(f"CUDA available: {torch.cuda.is_available()}")
+print(f"CUDA device: {torch.cuda.get_device_name(0) if torch.cuda.is_available() else 'N/A'}")
+```
+
+**Requirements**: NVIDIA GPU with appropriate CUDA toolkit installed on the system.
+
 ### Running the Service
 
 Start the API server:
