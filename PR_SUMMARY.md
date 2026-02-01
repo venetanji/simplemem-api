@@ -2,7 +2,7 @@
 
 ## Overview
 
-This PR implements a complete FastAPI-based REST API service for SimpleMem memory management with a local-first design philosophy. The service provides a backend for the Model Context Protocol (MCP) repository and supports future remote/cloud deployments.
+This PR implements a complete FastAPI-based REST API service for SimpleMem memory management with a local-first design philosophy. The service provides a backend for the [SimpleMem MCP client](https://github.com/venetanji/simplemem-mcp) and supports future remote/cloud deployments.
 
 ## High-Level Architecture
 
@@ -168,13 +168,13 @@ Server starts at `http://localhost:8000`
 
 ### MCP Integration
 
-Set environment variable in MCP client:
+Set environment variable in the [SimpleMem MCP client](https://github.com/venetanji/simplemem-mcp):
 
 ```bash
 export SIMPLEMEM_API_URL=http://localhost:8000
 ```
 
-MCP client can now make requests to all endpoints.
+The MCP client will connect to this API and can make requests to all endpoints. See the [SimpleMem MCP repository](https://github.com/venetanji/simplemem-mcp) for setup instructions.
 
 ## Future Remote/Cloud Support
 
@@ -264,7 +264,7 @@ curl -X POST http://localhost:8000/query \
 2. **Data Privacy**: All data stays local by default
 3. **Fast Dependency Management**: uv provides reliable, reproducible builds
 4. **Flexible**: Switch between storage backends without code changes
-5. **MCP Compatible**: Designed specifically for MCP integration
+5. **MCP Compatible**: Designed for [SimpleMem MCP client](https://github.com/venetanji/simplemem-mcp) integration
 6. **Production Ready**: Comprehensive error handling, logging, health checks
 7. **Well Documented**: Extensive README and Copilot instructions
 8. **Secure**: No known vulnerabilities, input validation, type safety
