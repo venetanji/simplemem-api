@@ -51,7 +51,7 @@ Memories are stored with the following schema (matching SimpleMem):
 ### Prerequisites
 
 - Python 3.10 or higher
-- pip (Python package manager)
+- [uv](https://github.com/astral-sh/uv) (fast Python package installer)
 
 ### Installation
 
@@ -61,15 +61,33 @@ git clone https://github.com/venetanji/simplemem-api.git
 cd simplemem-api
 ```
 
-2. Create a virtual environment (recommended):
+2. Install uv if you haven't already:
 ```bash
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# macOS and Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows
+powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+
+# Or via pip
+pip install uv
 ```
 
-3. Install dependencies:
+3. Create a virtual environment and install dependencies with uv:
 ```bash
-pip install -r requirements.txt
+# Create virtual environment
+uv venv
+
+# Activate virtual environment
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies from lock file
+uv pip sync requirements.lock
+```
+
+Alternatively, install directly without creating a venv:
+```bash
+uv pip install -r requirements.lock
 ```
 
 ### Configuration
@@ -266,8 +284,25 @@ simplemem-api/
 ├── .gitignore              # Git ignore rules
 ├── pyproject.toml          # Project metadata and dependencies
 ├── README.md               # This file
-├── requirements.txt        # Python dependencies
+├── requirements.lock       # Locked Python dependencies (uv)
 └── run.py                  # Application entrypoint
+```
+
+### Adding or Updating Dependencies
+
+This project uses `uv` for fast and reliable dependency management.
+
+To add a new dependency:
+```bash
+# Add to pyproject.toml [project.dependencies] section, then:
+uv pip compile pyproject.toml -o requirements.lock
+uv pip sync requirements.lock
+```
+
+To update all dependencies:
+```bash
+uv pip compile pyproject.toml -o requirements.lock --upgrade
+uv pip sync requirements.lock
 ```
 
 ### Extending Storage Adapters

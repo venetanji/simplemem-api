@@ -182,6 +182,25 @@ Keep dependencies minimal and well-justified:
 
 Only add new dependencies if absolutely necessary.
 
+### Dependency Management with uv
+
+This project uses `uv` for fast and reliable dependency management:
+
+```bash
+# Add a new dependency to pyproject.toml [project.dependencies], then:
+uv pip compile pyproject.toml -o requirements.lock
+uv pip sync requirements.lock
+
+# Update all dependencies:
+uv pip compile pyproject.toml -o requirements.lock --upgrade
+uv pip sync requirements.lock
+
+# Install dependencies in a new environment:
+uv venv
+source .venv/bin/activate
+uv pip sync requirements.lock
+```
+
 ## Testing Philosophy
 
 - Test locally before committing
