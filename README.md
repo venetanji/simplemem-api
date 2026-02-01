@@ -1,6 +1,8 @@
 # SimpleMem API
 
-FastAPI-based REST API service for SimpleMem memory management. This service provides a backend for the Model Context Protocol (MCP) repo with local-first design and support for future remote deployments.
+FastAPI-based REST API service for SimpleMem memory management. This service provides a backend for the [SimpleMem MCP client](https://github.com/venetanji/simplemem-mcp) with local-first design and support for future remote deployments.
+
+> **Note**: This API is designed to work with the [SimpleMem MCP (Model Context Protocol) client](https://github.com/venetanji/simplemem-mcp). The MCP client provides a standardized interface for AI assistants to interact with memory storage.
 
 ## Features
 
@@ -279,24 +281,36 @@ Content-Type: application/json
 
 ## MCP Integration
 
-To use this API as a backend for the MCP (Model Context Protocol) repo:
+This API is designed to work seamlessly with the **[SimpleMem MCP client](https://github.com/venetanji/simplemem-mcp)**, which provides a Model Context Protocol (MCP) interface for AI assistants to interact with memory storage.
 
-1. Start the SimpleMem API service (see above)
+### Quick Setup with MCP Client
 
-2. Set the base URL environment variable in your MCP configuration:
+1. **Start the SimpleMem API service** (see [Running the Service](#running-the-service) above):
+   ```bash
+   python run.py
+   ```
+   The API will be available at `http://localhost:8000` by default.
 
-```bash
-export SIMPLEMEM_API_URL=http://localhost:8000
-```
+2. **Install and configure the SimpleMem MCP client**:
+   
+   See the [SimpleMem MCP repository](https://github.com/venetanji/simplemem-mcp) for installation instructions.
+   
+   The MCP client defaults to connecting to `http://localhost:8000`. To override this, set:
+   ```bash
+   export SIMPLEMEM_API_URL=http://localhost:8000
+   ```
 
-3. The MCP client can now make requests to the SimpleMem API endpoints
+3. **Use the MCP client** with your AI assistant to store and retrieve memories through the standardized MCP interface.
 
-Example MCP usage:
+### Direct API Usage Example
+
+If you prefer to use the API directly (without the MCP client), here's how:
 
 ```python
 import os
 import requests
 
+# Defaults to localhost:8000, matching the MCP client default
 base_url = os.getenv("SIMPLEMEM_API_URL", "http://localhost:8000")
 
 # Add a memory
@@ -319,6 +333,8 @@ response = requests.post(
 answer = response.json()["answer"]
 print(answer)
 ```
+
+For most use cases, we recommend using the [SimpleMem MCP client](https://github.com/venetanji/simplemem-mcp) rather than calling the API directly.
 
 ## Development
 
@@ -432,7 +448,7 @@ curl -X POST http://localhost:8000/query \
 
 ## License
 
-This project is provided as-is for use with SimpleMem and MCP.
+This project is provided as-is for use with SimpleMem and the [SimpleMem MCP client](https://github.com/venetanji/simplemem-mcp).
 
 ## Contributing
 
