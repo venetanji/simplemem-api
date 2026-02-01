@@ -486,6 +486,9 @@ curl -X POST http://localhost:8000/query \
 
 ## Future Enhancements
 
+- [x] Delete specific memories by entry_id (v0.1.0+)
+- [ ] Update/edit existing memories
+- [ ] Batch delete operations
 - [ ] Neo4j integration for cloud deployments
 - [ ] Authentication and authorization
 - [ ] Rate limiting
