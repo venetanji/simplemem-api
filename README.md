@@ -290,6 +290,34 @@ GET /stats
 
 Returns memory count, table name, database path, and type.
 
+### Delete Specific Memory
+
+```bash
+DELETE /memory/{entry_id}
+```
+
+Deletes a specific memory by its entry_id. Returns 404 if the memory doesn't exist.
+
+Example:
+```bash
+curl -X DELETE http://localhost:8000/memory/abc123
+```
+
+Response on success:
+```json
+{
+  "message": "Memory with entry_id 'abc123' deleted successfully",
+  "success": true
+}
+```
+
+Response on not found:
+```json
+{
+  "detail": "Memory with entry_id 'abc123' not found"
+}
+```
+
 ### Clear All Memories
 
 ```bash
