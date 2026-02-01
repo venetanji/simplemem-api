@@ -163,6 +163,28 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 The API will be available at `http://localhost:8000`
 
+### Running via `uvx`
+
+`uvx` can run this project as a tool (it uses an ephemeral environment, similar to `pipx`).
+
+Run from a local checkout:
+
+```bash
+uvx --from . simplemem-api --host 0.0.0.0 --port 8000
+```
+
+Run from GitHub (no local clone required):
+
+```bash
+uvx --from git+https://github.com/venetanji/simplemem-api.git simplemem-api --host 0.0.0.0 --port 8000
+```
+
+Run from PyPI (requires publishing first):
+
+```bash
+uvx --from simplemem-api simplemem-api --host 0.0.0.0 --port 8000
+```
+
 ## Testing
 
 Install dev dependencies (includes `pytest` + `httpx`) and run the test suite:
