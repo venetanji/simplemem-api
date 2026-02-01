@@ -77,6 +77,11 @@ class LanceDBAdapter(StorageAdapter):
     def initialize(self) -> None:
         """Initialize SimpleMem with LanceDB backend"""
         try:
+            # SimpleMem currently initializes a SentenceTransformer embedding model.
+            # Default to CPU for reliability (GPU can be opt-in via USE_CUDA=true).
+            if not settings.use_cuda:
+                os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
+
             # Import simplemem here to avoid issues if not installed
             from simplemem import SimpleMemSystem
             

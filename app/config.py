@@ -3,8 +3,10 @@ Configuration management for SimpleMem API
 Uses environment variables with sensible defaults for local development
 """
 
-from pydantic_settings import BaseSettings
 from typing import Optional
+
+from pydantic import Field
+from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
@@ -27,6 +29,10 @@ class Settings(BaseSettings):
     # LLM settings for SimpleMem
     model_name: Optional[str] = Field(None, alias="MODEL_NAME")  # e.g., "gpt-4" or "claude-3-opus-20240229"
     api_key: Optional[str] = None
+
+    # Embeddings / hardware settings
+    # Default to CPU for local-first reliability (CUDA can be opt-in via USE_CUDA=true)
+    use_cuda: bool = Field(False, alias="USE_CUDA")
     
     # Neo4j settings (placeholder for future)
     neo4j_uri: Optional[str] = None
