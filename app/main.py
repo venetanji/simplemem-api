@@ -177,7 +177,7 @@ async def finalize():
 @app.post("/query", response_model=QueryResponse)
 async def query_memories(query: QueryInput):
     """
-    Query memories using semantic search
+    Query memories using semantic search - returns an answer
     """
     if not storage or not storage.is_initialized():
         raise HTTPException(
@@ -186,12 +186,8 @@ async def query_memories(query: QueryInput):
         )
     
     try:
-        results = storage.query(
-            query.query,
-            limit=query.limit,
-            threshold=query.threshold
-        )
-        return QueryResponse(results=results, count=len(results))
+        answer = storage.query(query.query)
+        return QueryResponse(answer=answer)
     except Exception as e:
         logger.error(f"Error querying memories: {e}")
         raise HTTPException(

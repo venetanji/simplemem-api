@@ -37,8 +37,8 @@ class StorageAdapter(ABC):
         pass
     
     @abstractmethod
-    def query(self, query: str, limit: int = 10, threshold: Optional[float] = None) -> List[MemoryRecord]:
-        """Query memories"""
+    def query(self, query: str, limit: int = 10, threshold: Optional[float] = None) -> str:
+        """Query memories and get an answer"""
         pass
     
     @abstractmethod
@@ -78,13 +78,13 @@ class LanceDBAdapter(StorageAdapter):
         """Initialize SimpleMem with LanceDB backend"""
         try:
             # Import simplemem here to avoid issues if not installed
-            from simplemem import SimpleMem
+            from simplemem import SimpleMemSystem
             
             # Ensure the database directory exists
             Path(self.db_path).mkdir(parents=True, exist_ok=True)
             
-            # Initialize SimpleMem with local LanceDB
-            # Note: SimpleMem may require model_name and api_key for embeddings
+            # Initialize SimpleMemSystem with local LanceDB
+            # Note: SimpleMem requires api_key and model for LLM operations
             init_kwargs = {
                 "db_path": self.db_path,
                 "table_name": self.table_name,
@@ -92,11 +92,11 @@ class LanceDBAdapter(StorageAdapter):
             
             # Add optional LLM settings if provided
             if settings.model_name:
-                init_kwargs["model_name"] = settings.model_name
+                init_kwargs["model"] = settings.model_name
             if settings.api_key:
                 init_kwargs["api_key"] = settings.api_key
             
-            self.simplemem = SimpleMem(**init_kwargs)
+            self.simplemem = SimpleMemSystem(**init_kwargs)
             self._initialized = True
         except Exception as e:
             raise RuntimeError(f"Failed to initialize SimpleMem with LanceDB: {str(e)}")
@@ -107,21 +107,12 @@ class LanceDBAdapter(StorageAdapter):
             raise RuntimeError("Storage not initialized. Call initialize() first.")
         
         try:
-            # Convert DialogueInput to dict for SimpleMem
-            dialogue_data = {
-                "content": dialogue.content,
-                "timestamp": dialogue.timestamp,
-                "location": dialogue.location,
-                "persons": dialogue.persons,
-                "entities": dialogue.entities,
-                "topic": dialogue.topic,
-            }
-            
-            # Remove None values
-            dialogue_data = {k: v for k, v in dialogue_data.items() if v is not None}
-            
-            # Add to SimpleMem
-            self.simplemem.add(dialogue.content, **dialogue_data)
+            # Add dialogue using SimpleMem's add_dialogue method
+            self.simplemem.add_dialogue(
+                speaker=dialogue.speaker,
+                content=dialogue.content,
+                timestamp=dialogue.timestamp
+            )
             
             return {"success": True, "message": "Dialogue added successfully"}
         except Exception as e:
@@ -133,16 +124,27 @@ class LanceDBAdapter(StorageAdapter):
             raise RuntimeError("Storage not initialized. Call initialize() first.")
         
         try:
-            count = 0
-            for dialogue in dialogues:
-                result = self.add_dialogue(dialogue)
-                if result.get("success"):
-                    count += 1
+            # Import Dialogue model from simplemem
+            from simplemem import Dialogue
+            
+            # Convert DialogueInput list to Dialogue list
+            simplemem_dialogues = []
+            for idx, dialogue in enumerate(dialogues):
+                simplemem_dialogue = Dialogue(
+                    dialogue_id=idx,
+                    speaker=dialogue.speaker,
+                    content=dialogue.content,
+                    timestamp=dialogue.timestamp
+                )
+                simplemem_dialogues.append(simplemem_dialogue)
+            
+            # Add dialogues using SimpleMem's add_dialogues method
+            self.simplemem.add_dialogues(simplemem_dialogues)
             
             return {
                 "success": True,
-                "message": f"Added {count} out of {len(dialogues)} dialogues",
-                "count": count
+                "message": f"Added {len(dialogues)} dialogues",
+                "count": len(dialogues)
             }
         except Exception as e:
             return {"success": False, "message": f"Failed to add dialogues: {str(e)}"}
@@ -163,35 +165,15 @@ class LanceDBAdapter(StorageAdapter):
         except Exception as e:
             return {"success": False, "message": f"Failed to finalize: {str(e)}"}
     
-    def query(self, query: str, limit: int = 10, threshold: Optional[float] = None) -> List[MemoryRecord]:
-        """Query memories using SimpleMem"""
+    def query(self, query: str, limit: int = 10, threshold: Optional[float] = None) -> str:
+        """Query memories using SimpleMem's ask method"""
         if not self._initialized:
             raise RuntimeError("Storage not initialized. Call initialize() first.")
         
         try:
-            # Query SimpleMem
-            query_kwargs = {"limit": limit}
-            if threshold is not None:
-                query_kwargs["threshold"] = threshold
-            
-            results = self.simplemem.query(query, **query_kwargs)
-            
-            # Convert results to MemoryRecord models
-            memories = []
-            for result in results:
-                memory = MemoryRecord(
-                    lossless_restatement=result.get("lossless_restatement", result.get("content", "")),
-                    keywords=result.get("keywords"),
-                    timestamp=result.get("timestamp"),
-                    location=result.get("location"),
-                    persons=result.get("persons"),
-                    entities=result.get("entities"),
-                    topic=result.get("topic"),
-                    vector=result.get("vector"),
-                )
-                memories.append(memory)
-            
-            return memories
+            # Use SimpleMem's ask method which returns a string answer
+            answer = self.simplemem.ask(query)
+            return answer
         except Exception as e:
             raise RuntimeError(f"Failed to query memories: {str(e)}")
     
@@ -201,27 +183,24 @@ class LanceDBAdapter(StorageAdapter):
             raise RuntimeError("Storage not initialized. Call initialize() first.")
         
         try:
-            # Retrieve all memories from SimpleMem
-            if hasattr(self.simplemem, 'get_all'):
-                results = self.simplemem.get_all(limit=limit) if limit else self.simplemem.get_all()
-            elif hasattr(self.simplemem, 'retrieve_all'):
-                results = self.simplemem.retrieve_all(limit=limit) if limit else self.simplemem.retrieve_all()
-            else:
-                # Fallback: query with empty string or use table directly
-                results = []
+            # Use SimpleMem's get_all_memories method
+            memory_entries = self.simplemem.get_all_memories()
             
-            # Convert results to MemoryRecord models
+            # Convert MemoryEntry objects to MemoryRecord models
             memories = []
-            for result in results:
+            for entry in memory_entries:
+                if limit and len(memories) >= limit:
+                    break
+                    
                 memory = MemoryRecord(
-                    lossless_restatement=result.get("lossless_restatement", result.get("content", "")),
-                    keywords=result.get("keywords"),
-                    timestamp=result.get("timestamp"),
-                    location=result.get("location"),
-                    persons=result.get("persons"),
-                    entities=result.get("entities"),
-                    topic=result.get("topic"),
-                    vector=result.get("vector"),
+                    entry_id=entry.entry_id if hasattr(entry, 'entry_id') else None,
+                    lossless_restatement=entry.lossless_restatement,
+                    keywords=entry.keywords if hasattr(entry, 'keywords') and entry.keywords else None,
+                    timestamp=entry.timestamp if hasattr(entry, 'timestamp') else None,
+                    location=entry.location if hasattr(entry, 'location') else None,
+                    persons=entry.persons if hasattr(entry, 'persons') and entry.persons else None,
+                    entities=entry.entities if hasattr(entry, 'entities') and entry.entities else None,
+                    topic=entry.topic if hasattr(entry, 'topic') else None,
                 )
                 memories.append(memory)
             
@@ -236,11 +215,8 @@ class LanceDBAdapter(StorageAdapter):
         
         try:
             # Get count of memories
-            count = 0
-            if hasattr(self.simplemem, 'count'):
-                count = self.simplemem.count()
-            elif hasattr(self.simplemem, 'get_count'):
-                count = self.simplemem.get_count()
+            memories = self.simplemem.get_all_memories()
+            count = len(memories)
             
             return {
                 "count": count,
@@ -297,7 +273,7 @@ class Neo4jAdapter(StorageAdapter):
     def finalize(self) -> Dict[str, Any]:
         raise NotImplementedError("Neo4j adapter not yet implemented")
     
-    def query(self, query: str, limit: int = 10, threshold: Optional[float] = None) -> List[MemoryRecord]:
+    def query(self, query: str, limit: int = 10, threshold: Optional[float] = None) -> str:
         raise NotImplementedError("Neo4j adapter not yet implemented")
     
     def retrieve_all(self, limit: Optional[int] = None) -> List[MemoryRecord]:

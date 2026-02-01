@@ -10,12 +10,9 @@ from datetime import datetime
 
 class DialogueInput(BaseModel):
     """Input model for a single dialogue/memory"""
+    speaker: str = Field(..., description="Speaker/author of the dialogue")
     content: str = Field(..., description="The dialogue/memory content to store")
-    timestamp: Optional[datetime] = Field(None, description="Timestamp of the dialogue")
-    location: Optional[str] = Field(None, description="Location where dialogue occurred")
-    persons: Optional[List[str]] = Field(None, description="People involved in the dialogue")
-    entities: Optional[List[str]] = Field(None, description="Named entities in the dialogue")
-    topic: Optional[str] = Field(None, description="Topic or category of the dialogue")
+    timestamp: Optional[str] = Field(None, description="Timestamp of the dialogue (ISO format)")
 
 
 class DialogueBatchInput(BaseModel):
@@ -24,28 +21,25 @@ class DialogueBatchInput(BaseModel):
 
 
 class MemoryRecord(BaseModel):
-    """Complete memory record matching SimpleMem schema"""
+    """Complete memory record matching SimpleMem MemoryEntry schema"""
+    entry_id: Optional[str] = Field(None, description="Unique entry identifier")
     lossless_restatement: str = Field(..., description="Lossless restatement of the memory")
     keywords: Optional[List[str]] = Field(None, description="Keywords extracted from memory")
-    timestamp: Optional[datetime] = Field(None, description="When the memory was created")
+    timestamp: Optional[str] = Field(None, description="When the memory was created")
     location: Optional[str] = Field(None, description="Location associated with memory")
     persons: Optional[List[str]] = Field(None, description="People mentioned in memory")
     entities: Optional[List[str]] = Field(None, description="Entities mentioned in memory")
     topic: Optional[str] = Field(None, description="Topic of the memory")
-    vector: Optional[List[float]] = Field(None, description="Embedding vector")
 
 
 class QueryInput(BaseModel):
     """Input model for memory queries"""
     query: str = Field(..., description="Query string to search memories")
-    limit: Optional[int] = Field(10, description="Maximum number of results to return")
-    threshold: Optional[float] = Field(None, description="Similarity threshold for results")
 
 
 class QueryResponse(BaseModel):
     """Response model for memory queries"""
-    results: List[MemoryRecord] = Field(..., description="Matching memories")
-    count: int = Field(..., description="Number of results returned")
+    answer: str = Field(..., description="Answer from SimpleMem")
 
 
 class StatsResponse(BaseModel):
