@@ -281,3 +281,35 @@ async def clear_memories(request: ClearRequest):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(e)
         )
+
+
+@app.delete("/memory/{entry_id}", response_model=MessageResponse)
+async def delete_memory(entry_id: str):
+    """
+    Delete a specific memory by entry_id
+    """
+    if not storage or not storage.is_initialized():
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Storage not initialized"
+        )
+    
+    try:
+        result = storage.delete_memory(entry_id)
+        if result.get("success"):
+            return MessageResponse(message=result["message"], success=True)
+        else:
+            # Memory not found
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=result["message"]
+            )
+    except HTTPException:
+        # Re-raise HTTPExceptions (like 404)
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting memory: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(e)
+        )

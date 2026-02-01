@@ -60,6 +60,11 @@ class StorageAdapter(ABC):
     def is_initialized(self) -> bool:
         """Check if storage is initialized"""
         pass
+    
+    @abstractmethod
+    def delete_memory(self, entry_id: str) -> Dict[str, Any]:
+        """Delete a specific memory by entry_id"""
+        pass
 
 
 class LanceDBAdapter(StorageAdapter):
@@ -273,6 +278,40 @@ class LanceDBAdapter(StorageAdapter):
     def is_initialized(self) -> bool:
         """Check if storage is initialized"""
         return self._initialized
+    
+    def delete_memory(self, entry_id: str) -> Dict[str, Any]:
+        """Delete a specific memory by entry_id"""
+        if not self._initialized:
+            raise RuntimeError("Storage not initialized. Call initialize() first.")
+        
+        try:
+            # Access the LanceDB table from SimpleMem's vector_store
+            table = self.simplemem.vector_store.table
+            
+            # Sanitize entry_id to prevent SQL injection
+            # Replace single quotes with double single quotes (SQL escaping)
+            safe_entry_id = entry_id.replace("'", "''")
+            
+            # Check if the entry exists first
+            existing = table.search().where(f"entry_id = '{safe_entry_id}'", prefilter=True).limit(1).to_list()
+            if not existing:
+                return {
+                    "success": False,
+                    "message": f"Memory with entry_id '{entry_id}' not found"
+                }
+            
+            # Delete the entry using LanceDB's delete method with WHERE clause
+            table.delete(f"entry_id = '{safe_entry_id}'")
+            
+            return {
+                "success": True,
+                "message": f"Memory with entry_id '{entry_id}' deleted successfully"
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "message": f"Failed to delete memory: {str(e)}"
+            }
 
 
 class Neo4jAdapter(StorageAdapter):
@@ -311,6 +350,9 @@ class Neo4jAdapter(StorageAdapter):
     
     def is_initialized(self) -> bool:
         return self._initialized
+    
+    def delete_memory(self, entry_id: str) -> Dict[str, Any]:
+        raise NotImplementedError("Neo4j adapter not yet implemented")
 
 
 def get_storage_adapter() -> StorageAdapter:

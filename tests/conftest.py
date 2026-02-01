@@ -72,6 +72,30 @@ class FakeStorageAdapter:
     def is_initialized(self) -> bool:
         return self._initialized
 
+    def delete_memory(self, entry_id: str) -> Dict[str, Any]:
+        """Delete a specific memory by entry_id."""
+        # Find and remove the dialogue with matching entry_id
+        # Since our fake storage uses a simple list, we'll need to track entry_ids
+        # For simplicity, we'll search by content match or implement basic entry_id tracking
+        try:
+            # Try to find by content or speaker matching the entry_id
+            # For better testing, let's just remove the first one if entry_id matches its index
+            # Find the index first, then remove to avoid modifying list during iteration
+            index_to_remove = None
+            for i, d in enumerate(self._dialogues):
+                # Simple mock: use content hash or index as entry_id
+                if str(i) == entry_id or d.content == entry_id:
+                    index_to_remove = i
+                    break
+            
+            if index_to_remove is not None:
+                self._dialogues.pop(index_to_remove)
+                return {"success": True, "message": f"Memory with entry_id '{entry_id}' deleted successfully"}
+            else:
+                return {"success": False, "message": f"Memory with entry_id '{entry_id}' not found"}
+        except Exception as e:
+            return {"success": False, "message": f"Failed to delete memory: {str(e)}"}
+
 
 @pytest.fixture()
 def client(monkeypatch) -> Tuple[TestClient, FakeStorageAdapter]:

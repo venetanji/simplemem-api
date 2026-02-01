@@ -290,6 +290,34 @@ GET /stats
 
 Returns memory count, table name, database path, and type.
 
+### Delete Specific Memory
+
+```bash
+DELETE /memory/{entry_id}
+```
+
+Deletes a specific memory by its entry_id. Returns 404 if the memory doesn't exist.
+
+Example:
+```bash
+curl -X DELETE http://localhost:8000/memory/abc123
+```
+
+Response on success:
+```json
+{
+  "message": "Memory with entry_id 'abc123' deleted successfully",
+  "success": true
+}
+```
+
+Response on not found:
+```json
+{
+  "detail": "Memory with entry_id 'abc123' not found"
+}
+```
+
 ### Clear All Memories
 
 ```bash
@@ -458,6 +486,9 @@ curl -X POST http://localhost:8000/query \
 
 ## Future Enhancements
 
+- [x] Delete specific memories by entry_id (v0.1.0+)
+- [ ] Update/edit existing memories
+- [ ] Batch delete operations
 - [ ] Neo4j integration for cloud deployments
 - [ ] Authentication and authorization
 - [ ] Rate limiting
