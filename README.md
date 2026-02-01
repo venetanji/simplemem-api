@@ -111,10 +111,15 @@ DB_PATH=./simplemem_data
 DB_TYPE=lancedb
 TABLE_NAME=memories
 
-# LLM Settings (optional, for embeddings)
+# LLM Settings (REQUIRED for SimpleMem operations)
+# SimpleMem requires an OpenAI-compatible API for embeddings and memory processing
 MODEL_NAME=gpt-4
-API_KEY=your-api-key-here
+API_KEY=your-openai-api-key-here
 ```
+
+**Note**: SimpleMem requires an API key for LLM operations (embeddings and memory processing). Without a valid API key, the storage will not initialize. You can use:
+- OpenAI API key with models like `gpt-4`, `gpt-3.5-turbo`
+- Compatible APIs (Azure OpenAI, local LLM endpoints, etc.)
 
 ### Running the Service
 
@@ -372,8 +377,8 @@ curl -X POST http://localhost:8000/query \
 | `DB_PATH` | ./simplemem_data | Database storage path |
 | `DB_TYPE` | lancedb | Database type (lancedb, neo4j) |
 | `TABLE_NAME` | memories | Table/collection name |
-| `MODEL_NAME` | None | LLM model name for embeddings |
-| `API_KEY` | None | API key for LLM service |
+| `MODEL_NAME` | None | **Required**: LLM model name (e.g., gpt-4) |
+| `API_KEY` | None | **Required**: API key for LLM service |
 | `NEO4J_URI` | None | Neo4j connection URI |
 | `NEO4J_USER` | None | Neo4j username |
 | `NEO4J_PASSWORD` | None | Neo4j password |
