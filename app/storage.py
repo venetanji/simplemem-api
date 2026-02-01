@@ -288,8 +288,12 @@ class LanceDBAdapter(StorageAdapter):
             # Access the LanceDB table from SimpleMem's vector_store
             table = self.simplemem.vector_store.table
             
+            # Sanitize entry_id to prevent SQL injection
+            # Replace single quotes with double single quotes (SQL escaping)
+            safe_entry_id = entry_id.replace("'", "''")
+            
             # Check if the entry exists first
-            existing = table.search().where(f"entry_id = '{entry_id}'", prefilter=True).limit(1).to_list()
+            existing = table.search().where(f"entry_id = '{safe_entry_id}'", prefilter=True).limit(1).to_list()
             if not existing:
                 return {
                     "success": False,
@@ -297,7 +301,7 @@ class LanceDBAdapter(StorageAdapter):
                 }
             
             # Delete the entry using LanceDB's delete method with WHERE clause
-            table.delete(f"entry_id = '{entry_id}'")
+            table.delete(f"entry_id = '{safe_entry_id}'")
             
             return {
                 "success": True,

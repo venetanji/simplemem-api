@@ -77,23 +77,19 @@ class FakeStorageAdapter:
         # Find and remove the dialogue with matching entry_id
         # Since our fake storage uses a simple list, we'll need to track entry_ids
         # For simplicity, we'll search by content match or implement basic entry_id tracking
-        initial_count = len(self._dialogues)
-        
-        # Simple implementation: treat entry_id as an index or identifier
-        # In reality, SimpleMem would assign actual entry_ids
-        # For testing purposes, we'll just check if we can remove something
         try:
             # Try to find by content or speaker matching the entry_id
             # For better testing, let's just remove the first one if entry_id matches its index
-            found = False
+            # Find the index first, then remove to avoid modifying list during iteration
+            index_to_remove = None
             for i, d in enumerate(self._dialogues):
                 # Simple mock: use content hash or index as entry_id
                 if str(i) == entry_id or d.content == entry_id:
-                    self._dialogues.pop(i)
-                    found = True
+                    index_to_remove = i
                     break
             
-            if found:
+            if index_to_remove is not None:
+                self._dialogues.pop(index_to_remove)
                 return {"success": True, "message": f"Memory with entry_id '{entry_id}' deleted successfully"}
             else:
                 return {"success": False, "message": f"Memory with entry_id '{entry_id}' not found"}

@@ -75,3 +75,22 @@ def test_delete_after_batch_add(client):
     assert stats.status_code == 200
     # Note: In fake storage, we track dialogues, so count should be 2 after deletion
     assert stats.json()["count"] == 2
+
+
+def test_delete_memory_with_sql_injection_attempt(client):
+    """Test that SQL injection attempts are properly handled."""
+    c, fake = client
+    
+    # Try to delete with SQL injection payload
+    malicious_entry_id = "abc' OR '1'='1"
+    delete_response = c.delete(f"/memory/{malicious_entry_id}")
+    
+    # Should return 404 (not found) not delete everything
+    assert delete_response.status_code == 404
+    assert "not found" in delete_response.json()["detail"].lower()
+    
+    # Verify no memories were deleted by checking stats
+    stats = c.get("/stats")
+    assert stats.status_code == 200
+    # Count should still be 0 since we didn't add any memories
+    assert stats.json()["count"] == 0
