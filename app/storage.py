@@ -126,12 +126,15 @@ class LanceDBAdapter(StorageAdapter):
         try:
             # Import Dialogue model from simplemem
             from simplemem import Dialogue
+            import time
             
             # Convert DialogueInput list to Dialogue list
+            # Use timestamp-based IDs to ensure uniqueness across calls
+            base_id = int(time.time() * 1000000)  # microseconds since epoch
             simplemem_dialogues = []
             for idx, dialogue in enumerate(dialogues):
                 simplemem_dialogue = Dialogue(
-                    dialogue_id=idx,
+                    dialogue_id=base_id + idx,
                     speaker=dialogue.speaker,
                     content=dialogue.content,
                     timestamp=dialogue.timestamp
@@ -233,14 +236,22 @@ class LanceDBAdapter(StorageAdapter):
             raise RuntimeError("Storage not initialized. Call initialize() first.")
         
         try:
-            # Clear all memories from SimpleMem
-            if hasattr(self.simplemem, 'clear'):
-                self.simplemem.clear()
-            elif hasattr(self.simplemem, 'delete_all'):
-                self.simplemem.delete_all()
-            else:
-                # Fallback: reinitialize
-                self.initialize()
+            # SimpleMem doesn't have a clear method, so we need to reinitialize with clear_db=True
+            from simplemem import SimpleMemSystem
+            
+            # Reinitialize with clear_db flag
+            init_kwargs = {
+                "db_path": self.db_path,
+                "table_name": self.table_name,
+                "clear_db": True,
+            }
+            
+            if settings.model_name:
+                init_kwargs["model"] = settings.model_name
+            if settings.api_key:
+                init_kwargs["api_key"] = settings.api_key
+            
+            self.simplemem = SimpleMemSystem(**init_kwargs)
             
             return {"success": True, "message": "All memories cleared"}
         except Exception as e:

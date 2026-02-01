@@ -25,7 +25,7 @@ class Settings(BaseSettings):
     table_name: str = "memories"
     
     # LLM settings for SimpleMem
-    model_name: Optional[str] = None  # e.g., "gpt-4" or "claude-3-opus-20240229"
+    model_name: Optional[str] = Field(None, alias="MODEL_NAME")  # e.g., "gpt-4" or "claude-3-opus-20240229"
     api_key: Optional[str] = None
     
     # Neo4j settings (placeholder for future)
@@ -37,6 +37,7 @@ class Settings(BaseSettings):
         env_file = ".env"
         env_file_encoding = "utf-8"
         case_sensitive = False
+        populate_by_name = True  # Allow population by field name or alias
 
 
 # Global settings instance

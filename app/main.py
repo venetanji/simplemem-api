@@ -5,6 +5,7 @@ Main FastAPI application for SimpleMem REST API
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from typing import Optional
 import logging
 
 from app.config import settings
@@ -61,7 +62,7 @@ app = FastAPI(
 # Add CORS middleware for MCP client access
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Configure appropriately for production
+    allow_origins=["*"],  # TODO: Configure for production - restrict to specific origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -205,7 +206,7 @@ async def ask(query: QueryInput):
 
 
 @app.get("/retrieve", response_model=list[MemoryRecord])
-async def retrieve_memories(limit: int = None):
+async def retrieve_memories(limit: Optional[int] = None):
     """
     Retrieve raw memories (all or limited)
     """
