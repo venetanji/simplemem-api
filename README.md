@@ -163,6 +163,15 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
 The API will be available at `http://localhost:8000`
 
+## Testing
+
+Install dev dependencies (includes `pytest` + `httpx`) and run the test suite:
+
+```bash
+uv pip install -e '.[dev]'
+uv run python -m pytest -q
+```
+
 ## API Endpoints
 
 ### Health Check
