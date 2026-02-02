@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  simplemem-api-cpu:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - models:/app/models
+      - data:/app/data
+    environment:
+      - MODEL_NAME=${MODEL_NAME:-gpt-4}
+      - API_KEY=${API_KEY}
+      - DB_PATH=/app/data/simplemem_data
+      - DB_TYPE=lancedb
+      - TABLE_NAME=memories
+    restart: unless-stopped
+
+  simplemem-api-cuda:
+    build:
+      context: .
+      dockerfile: Dockerfile.cuda
+    ports:
+      - "8001:8000"
+    volumes:
+      - models:/app/models
+      - data:/app/data
+    environment:
+      - MODEL_NAME=${MODEL_NAME:-gpt-4}
+      - API_KEY=${API_KEY}
+      - DB_PATH=/app/data/simplemem_data
+      - DB_TYPE=lancedb
+      - TABLE_NAME=memories
+      - USE_CUDA=true
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    restart: unless-stopped
+
+volumes:
+  models:
+  data:
