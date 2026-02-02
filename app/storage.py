@@ -84,6 +84,19 @@ class LanceDBAdapter(StorageAdapter):
         self.db_path = settings.db_path
         self.table_name = settings.table_name
     
+    def _convert_memory_entry_to_record(self, entry) -> MemoryRecord:
+        """Convert a SimpleMem MemoryEntry to a MemoryRecord model"""
+        return MemoryRecord(
+            entry_id=entry.entry_id if hasattr(entry, 'entry_id') else None,
+            lossless_restatement=entry.lossless_restatement,
+            keywords=entry.keywords if hasattr(entry, 'keywords') and entry.keywords else None,
+            timestamp=entry.timestamp if hasattr(entry, 'timestamp') else None,
+            location=entry.location if hasattr(entry, 'location') else None,
+            persons=entry.persons if hasattr(entry, 'persons') and entry.persons else None,
+            entities=entry.entities if hasattr(entry, 'entities') and entry.entities else None,
+            topic=entry.topic if hasattr(entry, 'topic') else None,
+        )
+    
     def initialize(self) -> None:
         """Initialize SimpleMem with LanceDB backend"""
         try:
@@ -217,18 +230,7 @@ class LanceDBAdapter(StorageAdapter):
             for entry in memory_entries:
                 if limit and len(memories) >= limit:
                     break
-                    
-                memory = MemoryRecord(
-                    entry_id=entry.entry_id if hasattr(entry, 'entry_id') else None,
-                    lossless_restatement=entry.lossless_restatement,
-                    keywords=entry.keywords if hasattr(entry, 'keywords') and entry.keywords else None,
-                    timestamp=entry.timestamp if hasattr(entry, 'timestamp') else None,
-                    location=entry.location if hasattr(entry, 'location') else None,
-                    persons=entry.persons if hasattr(entry, 'persons') and entry.persons else None,
-                    entities=entry.entities if hasattr(entry, 'entities') and entry.entities else None,
-                    topic=entry.topic if hasattr(entry, 'topic') else None,
-                )
-                memories.append(memory)
+                memories.append(self._convert_memory_entry_to_record(entry))
             
             return memories
         except Exception as e:
@@ -328,21 +330,7 @@ class LanceDBAdapter(StorageAdapter):
             memory_entries = self.simplemem.vector_store.semantic_search(query, top_k=top_k)
             
             # Convert MemoryEntry objects to MemoryRecord models
-            memories = []
-            for entry in memory_entries:
-                memory = MemoryRecord(
-                    entry_id=entry.entry_id if hasattr(entry, 'entry_id') else None,
-                    lossless_restatement=entry.lossless_restatement,
-                    keywords=entry.keywords if hasattr(entry, 'keywords') and entry.keywords else None,
-                    timestamp=entry.timestamp if hasattr(entry, 'timestamp') else None,
-                    location=entry.location if hasattr(entry, 'location') else None,
-                    persons=entry.persons if hasattr(entry, 'persons') and entry.persons else None,
-                    entities=entry.entities if hasattr(entry, 'entities') and entry.entities else None,
-                    topic=entry.topic if hasattr(entry, 'topic') else None,
-                )
-                memories.append(memory)
-            
-            return memories
+            return [self._convert_memory_entry_to_record(entry) for entry in memory_entries]
         except Exception as e:
             raise RuntimeError(f"Failed to perform semantic search: {str(e)}")
 
