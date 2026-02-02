@@ -205,8 +205,8 @@ docker run --gpus all -p 8000:8000 \
 **Key Features:**
 - 🔒 **Models in Volumes**: Embedding models are downloaded at runtime and stored in `/app/models` volume
 - 💾 **Data Persistence**: Memory data is stored in `/app/data` volume
-- 🚀 **Auto-install**: Uses `uvx` to install dependencies in the container
-- 🐳 **Minimal Images**: Optimized for small size using multi-stage builds
+- 🚀 **Auto-install**: Uses `uv` to install dependencies in the container
+- 🐳 **Minimal Images**: Optimized for small size
 
 The API will be available at `http://localhost:8000`
 

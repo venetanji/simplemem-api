@@ -30,7 +30,7 @@ EXPOSE 8000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
+  CMD python -c "import http.client; conn = http.client.HTTPConnection('localhost', 8000); conn.request('GET', '/health'); conn.getresponse()" || exit 1
 
 # Run the application using the installed script
 CMD ["simplemem-api", "--host", "0.0.0.0", "--port", "8000"]
