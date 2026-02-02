@@ -11,8 +11,8 @@ COPY pyproject.toml requirements.lock ./
 COPY app ./app
 COPY run.py ./
 
-# Install dependencies using uv
-RUN uv pip install --system -r requirements.lock
+# Install the package and dependencies using uv
+RUN uv pip install --system .
 
 # Create volume mount point for models and data
 VOLUME /app/models
@@ -32,5 +32,5 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD python -c "import requests; requests.get('http://localhost:8000/health')" || exit 1
 
-# Run the application using uvx
-CMD ["python", "-m", "app.cli", "--host", "0.0.0.0", "--port", "8000"]
+# Run the application using the installed script
+CMD ["simplemem-api", "--host", "0.0.0.0", "--port", "8000"]

@@ -28,6 +28,7 @@ jobs:
           context: .
           file: ./Dockerfile
           push: false
+          load: true
           tags: simplemem-api:cpu-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -54,6 +55,7 @@ jobs:
           context: .
           file: ./Dockerfile.cuda
           push: false
+          load: true
           tags: simplemem-api:cuda-latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
