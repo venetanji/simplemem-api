@@ -65,6 +65,11 @@ class StorageAdapter(ABC):
     def delete_memory(self, entry_id: str) -> Dict[str, Any]:
         """Delete a specific memory by entry_id"""
         pass
+    
+    @abstractmethod
+    def semantic_search(self, query: str, top_k: int = 10) -> List[MemoryRecord]:
+        """Perform semantic search to find memories similar to query"""
+        pass
 
 
 class LanceDBAdapter(StorageAdapter):
@@ -312,6 +317,34 @@ class LanceDBAdapter(StorageAdapter):
                 "success": False,
                 "message": f"Failed to delete memory: {str(e)}"
             }
+    
+    def semantic_search(self, query: str, top_k: int = 10) -> List[MemoryRecord]:
+        """Perform semantic search using SimpleMem's vector store"""
+        if not self._initialized:
+            raise RuntimeError("Storage not initialized. Call initialize() first.")
+        
+        try:
+            # Use SimpleMem's vector_store semantic_search method
+            memory_entries = self.simplemem.vector_store.semantic_search(query, top_k=top_k)
+            
+            # Convert MemoryEntry objects to MemoryRecord models
+            memories = []
+            for entry in memory_entries:
+                memory = MemoryRecord(
+                    entry_id=entry.entry_id if hasattr(entry, 'entry_id') else None,
+                    lossless_restatement=entry.lossless_restatement,
+                    keywords=entry.keywords if hasattr(entry, 'keywords') and entry.keywords else None,
+                    timestamp=entry.timestamp if hasattr(entry, 'timestamp') else None,
+                    location=entry.location if hasattr(entry, 'location') else None,
+                    persons=entry.persons if hasattr(entry, 'persons') and entry.persons else None,
+                    entities=entry.entities if hasattr(entry, 'entities') and entry.entities else None,
+                    topic=entry.topic if hasattr(entry, 'topic') else None,
+                )
+                memories.append(memory)
+            
+            return memories
+        except Exception as e:
+            raise RuntimeError(f"Failed to perform semantic search: {str(e)}")
 
 
 class Neo4jAdapter(StorageAdapter):
@@ -352,6 +385,9 @@ class Neo4jAdapter(StorageAdapter):
         return self._initialized
     
     def delete_memory(self, entry_id: str) -> Dict[str, Any]:
+        raise NotImplementedError("Neo4j adapter not yet implemented")
+    
+    def semantic_search(self, query: str, top_k: int = 10) -> List[MemoryRecord]:
         raise NotImplementedError("Neo4j adapter not yet implemented")
 
 

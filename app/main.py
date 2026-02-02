@@ -206,9 +206,12 @@ async def ask(query: QueryInput):
 
 
 @app.get("/retrieve", response_model=list[MemoryRecord])
-async def retrieve_memories(limit: Optional[int] = None):
+async def retrieve_memories(limit: Optional[int] = None, query: Optional[str] = None):
     """
-    Retrieve raw memories (all or limited)
+    Retrieve raw memories, optionally filtered by semantic similarity to a query.
+    
+    - If `query` is provided, performs vector-based semantic search and returns the top matches
+    - If `query` is not provided, returns all memories (or limited by `limit` parameter)
     """
     if not storage or not storage.is_initialized():
         raise HTTPException(
@@ -217,7 +220,13 @@ async def retrieve_memories(limit: Optional[int] = None):
         )
     
     try:
-        memories = storage.retrieve_all(limit=limit)
+        if query:
+            # Perform semantic search when query is provided
+            top_k = limit if limit else 10
+            memories = storage.semantic_search(query, top_k=top_k)
+        else:
+            # Fall back to retrieving all memories
+            memories = storage.retrieve_all(limit=limit)
         return memories
     except Exception as e:
         logger.error(f"Error retrieving memories: {e}")
