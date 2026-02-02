@@ -114,21 +114,25 @@ def test_retrieve_with_query_and_limit(client):
 
 
 def test_retrieve_no_matches(client):
-    """Test /retrieve with query that has no matches returns empty list."""
+    """Test /retrieve with query that has no matches returns empty list.
+    
+    Note: Uses /dialogue (singular) endpoint to add a single memory.
+    FakeStorageAdapter uses simple keyword matching for semantic search.
+    """
     c, _fake = client
 
-    # Add test dialogues
+    # Add test dialogue using singular endpoint
     c.post(
         "/dialogue",
         json={"speaker": "Alice", "content": "I love pizza."}
     )
 
-    # Search for something that doesn't exist
+    # Search for something that doesn't exist in the content (keyword-based matching)
     r = c.get("/retrieve?query=quantum")
     assert r.status_code == 200, r.text
     body = r.json()
     
-    # Should return empty list
+    # Should return empty list since "quantum" is not in "I love pizza"
     assert len(body) == 0
 
 
