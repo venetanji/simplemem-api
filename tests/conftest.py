@@ -59,8 +59,26 @@ class FakeStorageAdapter:
         return f"Matches: {joined}"
 
     def retrieve_all(self, limit: Optional[int] = None):
-        # Not needed for these tests.
-        raise NotImplementedError
+        """Retrieve all stored memories as MemoryRecord objects."""
+        from app.models import MemoryRecord
+        
+        memories = []
+        dialogues_to_convert = self._dialogues if limit is None else self._dialogues[:limit]
+        
+        for i, d in enumerate(dialogues_to_convert):
+            memory = MemoryRecord(
+                entry_id=str(i),
+                lossless_restatement=d.content,
+                keywords=None,
+                timestamp=d.timestamp,
+                location=None,
+                persons=[d.speaker],
+                entities=None,
+                topic=None,
+            )
+            memories.append(memory)
+        
+        return memories
 
     def get_stats(self) -> Dict[str, Any]:
         return {"count": len(self._dialogues), "table_name": "fake", "db_path": ":memory:", "db_type": "fake"}
@@ -95,7 +113,31 @@ class FakeStorageAdapter:
                 return {"success": False, "message": f"Memory with entry_id '{entry_id}' not found"}
         except Exception as e:
             return {"success": False, "message": f"Failed to delete memory: {str(e)}"}
-
+    
+    def semantic_search(self, query: str, top_k: int = 10):
+        """Perform semantic search (mock implementation using keyword matching)."""
+        from app.models import MemoryRecord
+        
+        # Simple keyword-based matching for testing
+        matches = []
+        for i, d in enumerate(self._dialogues):
+            if query.lower() in d.content.lower() or query.lower() in d.speaker.lower():
+                # Convert dialogue to MemoryRecord format
+                memory = MemoryRecord(
+                    entry_id=str(i),
+                    lossless_restatement=d.content,
+                    keywords=None,
+                    timestamp=d.timestamp,
+                    location=None,
+                    persons=[d.speaker],
+                    entities=None,
+                    topic=None,
+                )
+                matches.append(memory)
+                if len(matches) >= top_k:
+                    break
+        
+        return matches
 
 @pytest.fixture()
 def client(monkeypatch) -> Tuple[TestClient, FakeStorageAdapter]:
