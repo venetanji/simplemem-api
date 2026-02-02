@@ -151,6 +151,8 @@ print(f"CUDA device: {torch.cuda.get_device_name(0) if torch.cuda.is_available()
 
 ### Running the Service
 
+#### Local Installation
+
 Start the API server:
 
 ```bash
@@ -162,6 +164,49 @@ Or use uvicorn directly:
 ```bash
 uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
+
+#### Docker
+
+SimpleMem API provides Docker images for both CPU-only and CUDA-enabled deployments.
+
+**Using Docker Compose (recommended):**
+
+```bash
+# For CPU-only deployment
+docker-compose up simplemem-api-cpu
+
+# For CUDA-enabled deployment (requires NVIDIA GPU and nvidia-docker)
+docker-compose up simplemem-api-cuda
+```
+
+**Using Docker directly:**
+
+```bash
+# Build and run CPU image
+docker build -t simplemem-api:cpu -f Dockerfile .
+docker run -p 8000:8000 \
+  -v simplemem-models:/app/models \
+  -v simplemem-data:/app/data \
+  -e MODEL_NAME=gpt-4 \
+  -e API_KEY=your-api-key \
+  simplemem-api:cpu
+
+# Build and run CUDA image (requires nvidia-docker)
+docker build -t simplemem-api:cuda -f Dockerfile.cuda .
+docker run --gpus all -p 8000:8000 \
+  -v simplemem-models:/app/models \
+  -v simplemem-data:/app/data \
+  -e MODEL_NAME=gpt-4 \
+  -e API_KEY=your-api-key \
+  -e USE_CUDA=true \
+  simplemem-api:cuda
+```
+
+**Key Features:**
+- 🔒 **Models in Volumes**: Embedding models are downloaded at runtime and stored in `/app/models` volume
+- 💾 **Data Persistence**: Memory data is stored in `/app/data` volume
+- 🚀 **Auto-install**: Uses `uv` to install dependencies in the container
+- 🐳 **Minimal Images**: Optimized for small size
 
 The API will be available at `http://localhost:8000`
 
