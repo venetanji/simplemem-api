@@ -1,5 +1,7 @@
 services:
   simplemem-api-cpu:
+    profiles:
+      - cpu
     build:
       context: .
       dockerfile: Dockerfile
@@ -10,7 +12,6 @@ services:
       - data:/app/data
     environment:
       - MODEL_NAME=${MODEL_NAME:-gpt-4}
-      - API_KEY=${API_KEY}
       - DB_PATH=/app/data/simplemem_data
       - DB_TYPE=lancedb
       - TABLE_NAME=memories

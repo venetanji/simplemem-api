@@ -4,15 +4,19 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Install uv for fast package management
-RUN pip install --no-cache-dir uv
+RUN python -m pip install --no-cache-dir uv
 
 # Copy project files
-COPY pyproject.toml requirements.lock ./
+COPY pyproject.toml requirements.cpu.lock ./
 COPY app ./app
 COPY run.py ./
 
-# Install the package and dependencies using uv
-RUN uv pip install --system .
+# Install dependencies from the lockfile, then install the package itself
+RUN uv pip sync --system requirements.cpu.lock \
+    --index-url https://pypi.org/simple \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    --index-strategy unsafe-best-match && \
+  uv pip install --system --no-deps .
 
 # Create volume mount point for models and data
 VOLUME /app/models

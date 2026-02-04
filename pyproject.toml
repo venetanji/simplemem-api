@@ -17,6 +17,7 @@ dependencies = [
     "simplemem>=0.1.0",
     "lancedb>=0.4.3",
     "python-multipart>=0.0.6",
+    "pylance",
 ]
 
 [project.scripts]

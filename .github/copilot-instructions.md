@@ -187,18 +187,37 @@ Only add new dependencies if absolutely necessary.
 This project uses `uv` for fast and reliable dependency management:
 
 ```bash
-# Add a new dependency to pyproject.toml [project.dependencies], then:
+# Add a new dependency to pyproject.toml [project.dependencies], then re-lock:
+
+# CPU (recommended default)
+uv pip compile pyproject.toml -o requirements.cpu.lock \
+    --overrides overrides.cpu.txt \
+    --index-url https://pypi.org/simple \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    --index-strategy unsafe-best-match
+
+# CUDA-oriented lock (used by the CUDA Docker image)
 uv pip compile pyproject.toml -o requirements.lock
-uv pip sync requirements.lock
 
 # Update all dependencies:
-uv pip compile pyproject.toml -o requirements.lock --upgrade
-uv pip sync requirements.lock
 
-# Install dependencies in a new environment:
+# CPU (recommended default)
+uv pip compile pyproject.toml -o requirements.cpu.lock --upgrade \
+    --overrides overrides.cpu.txt \
+    --index-url https://pypi.org/simple \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    --index-strategy unsafe-best-match
+
+# CUDA-oriented lock (used by the CUDA Docker image)
+uv pip compile pyproject.toml -o requirements.lock --upgrade
+
+# Install dependencies in a new environment (CPU default):
 uv venv
 source .venv/bin/activate
-uv pip sync requirements.lock
+uv pip sync requirements.cpu.lock \
+    --index-url https://pypi.org/simple \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
+    --index-strategy unsafe-best-match
 ```
 
 ### GPU/CUDA Support

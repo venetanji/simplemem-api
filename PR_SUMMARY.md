@@ -29,7 +29,9 @@ simplemem-api/
 ├── .gitignore              # Git ignore rules
 ├── pyproject.toml          # Project metadata and dependencies
 ├── README.md               # Comprehensive documentation
-├── requirements.lock       # Locked dependencies (uv)
+├── requirements.cpu.lock   # Locked CPU-only deps (uv)
+├── requirements.lock       # Locked CUDA-oriented deps (uv)
+├── overrides.cpu.txt       # Pins CPU-only torch wheels
 └── run.py                  # Application entrypoint
 ```
 
@@ -140,7 +142,7 @@ cd simplemem-api
 # Create virtual environment and install dependencies
 uv venv
 source .venv/bin/activate
-uv pip sync requirements.lock
+uv pip sync requirements.cpu.lock
 ```
 
 ### Configuration
@@ -229,8 +231,8 @@ The MCP client will connect to this API and can make requests to all endpoints. 
 
 ```bash
 # Add to pyproject.toml [project.dependencies], then:
-uv pip compile pyproject.toml -o requirements.lock
-uv pip sync requirements.lock
+uv pip compile pyproject.toml -o requirements.cpu.lock
+uv pip sync requirements.cpu.lock
 ```
 
 ### Extending Storage Backends

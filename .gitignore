@@ -63,3 +63,4 @@ htmlcov/
 
 # Distribution / packaging
 *.whl
+docker-compose.override.yml
